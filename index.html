@@ -3493,7 +3493,7 @@
                     output += `${COMMON_TAGS}`;
 
                 } else if (currentMode === 'weekly_schedule') {
-                    output = `⏰｜${toMathBoldSerif('WEEK')} ${toMathBoldSerif(getValue('week_num'))} ${toMathBoldSerif('SCHEDULE')} #每週賽程\n\n`;
+                    output = `⏰ ${toMathBoldSerif('WEEK')} ${toMathBoldSerif(getValue('week_num'))} ${toMathBoldSerif('SCHEDULE')}｜每週賽程\n\n`;
                     output += `${getValue('week_intro')}\n\n-\n\n📌 本週賽事預告：\n`;
                     
                     const listContainer = document.getElementById('schedule_list_container');
@@ -3517,7 +3517,7 @@
                     output += `\n${COMMON_TAGS}`;
 
                 } else if (currentMode === 'weekly_standings') {
-                    output = `📊｜${toMathBoldSerif('WEEK')} ${toMathBoldSerif(getValue('week_num'))} #球隊戰績排行\n\n`;
+                    output = `📊 ${toMathBoldSerif('WEEK')} ${toMathBoldSerif(getValue('week_num'))} ${toMathBoldSerif('RANKING')}｜球隊戰績排行\n\n`;
                     output += `${getValue('standings_content')}\n`;
                     
                     const listContainer = document.getElementById('standings_schedule_list_container');
@@ -3610,7 +3610,7 @@
                     const team = getTeam(getValue('player_team'));
                     const name = getValue('player_name_select');
                     
-                    output = `🥇 ${toMathBoldSerif('PLAYER OF THE WEEK')}｜#單週表現最佳球員\n\n`;
+                    output = `🥇 ${toMathBoldSerif('PLAYER OF THE WEEK')}｜單週表現最佳球員\n\n`;
                     output += `${team.emoji} ${name} ${toMathBoldSerif('FOR REAL')} 🤫\n\n`;
                     
                     const statContainer = document.getElementById('stats_list_container');
