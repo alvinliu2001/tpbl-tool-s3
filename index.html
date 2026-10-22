@@ -3354,7 +3354,7 @@
 
                 } else if (currentMode === 'matchup_highlight') {
                     const home = getTeam(getValue('next_home')), away = getTeam(getValue('next_away'));
-                    output = '⚔️ ' + toMathBoldSerif('MATCH UP') + '｜ ' + away.emoji + ' vs. ' + home.emoji + '\n\n';
+                    output = '⚔️ ' + toMathBoldSerif('MATCH UP') + '｜ ' + away.full + ' ' + away.emoji + ' vs. ' + home.full + ' ' + home.emoji + '\n\n';
                     output += getValue('matchup_content') + '\n\n-\n\n';
                     const date = getValue('next_date');
                     if (date) {
