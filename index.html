@@ -183,6 +183,7 @@
                     <div class="px-4 py-2 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wider">週間貼文</div>
                     <button onclick="switchMode('press_conf')" id="btn-press_conf" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-microphone w-6 text-center"></i> 賽後記者會</button>
                     <button onclick="switchMode('weekday_preview')" id="btn-weekday_preview" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-calendar-day w-6 text-center"></i> 週間賽事預告</button>
+                    <button onclick="switchMode('matchup_highlight')" id="btn-matchup_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-bullseye w-6 text-center"></i> 賽前對戰亮點</button>
                     <button onclick="switchMode('local_player_highlight')" id="btn-local_player_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-star w-6 text-center"></i> 球員傑出表現</button>
                     <button onclick="switchMode('career_milestone')" id="btn-career_milestone" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-crown w-6 text-center"></i> 球員生涯紀錄</button>
                     <button onclick="switchMode('potw')" id="btn-potw" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-trophy w-6 text-center"></i> 單週最佳球員</button>
@@ -1960,7 +1961,7 @@
         let currentMode = '';
         const STORAGE_PREFIX = 'tpbl_regular_2026_27_v1_';
         const YOUTUBE_MODES = ['youtube_full_highlight','youtube_live','youtube_press_live'];
-        const YOUTUBE_SOCIAL = 'TPBL Official Website ◼︎ https://tpbl.basketball/\nTPBL IG ◼︎   / tpbl.tw  \nTPBL FB ◼︎   / tpbl.basketball  ';
+        const YOUTUBE_SOCIAL = 'TPBL Official Website ◼︎ https://tpbl.basketball/\nTPBL IG ◼︎ https://www.instagram.com/tpbl.tw/\nTPBL FB ◼︎ https://www.facebook.com/TPBL.Basketball';
         const YOUTUBE_MERCH = 'TPBL 官方系列商品 ◼︎ https://shopee.tw/inmories';
         const YOUTUBE_SHOPEE_DEFAULT = '💥 蝦皮 VIP 月月送 60 蝦幣\n蝦皮 VIP 享全賽季主場商品部限量 9 折\nhttps://sho.pe/9mu52f';
         const YOUTUBE_LEXAR = '💥 極速存儲 FOR REAL，精采畫面我們來真的！\nhttps://www.lexar.com/zh-hant/';
@@ -2493,7 +2494,7 @@
         }
 
         // --- Switch Mode Logic ---
-        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","weekly_schedule","weekly_standings","press_conf","weekday_preview","local_player_highlight","career_milestone","potw","top5","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
+        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","career_milestone","potw","top5","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
 
         function switchMode(mode) {
             try {
@@ -2528,6 +2529,7 @@
     "weekly_standings": "每週戰績排行",
     "press_conf": "賽後記者會",
     "weekday_preview": "週間賽事預告",
+    "matchup_highlight": "賽前對戰亮點",
     "local_player_highlight": "球員傑出表現",
     "career_milestone": "球員生涯紀錄",
     "potw": "單週最佳球員",
@@ -2624,31 +2626,9 @@
                         ${createTextarea('promo_link', '贊助商版位 (可換行)', '📍 SPORTS NATIONS 店點資訊...', 3)}
                     `;
                 } else if (mode === 'matchup_highlight') {
-                    html += `
-                         ${createNextGameBlock("今日比賽資訊 (Match Info)")}
-                        <div class="p-3 border rounded-md bg-gray-50 mb-3 mt-4">
-                            <p class="text-sm font-bold text-gray-700 mb-2">對戰組合</p>
-                            <div class="grid grid-cols-12 gap-2 items-center">
-                                <div class="col-span-4">
-                                    ${createTeamSelect('mu_home_team', '主隊')}
-                                </div>
-                                <div class="col-span-8">
-                                    ${createPlayerSelect('mu_home_player', '主隊球員', 'mu_home_team')}
-                                </div>
-                                
-                                <div class="col-span-12 text-center text-gray-400 text-xs font-bold my-1">VS</div>
-                                
-                                <div class="col-span-4">
-                                    ${createTeamSelect('mu_away_team', '客隊')}
-                                </div>
-                                <div class="col-span-8">
-                                    ${createPlayerSelect('mu_away_player', '客隊球員', 'mu_away_team')}
-                                </div>
-                            </div>
-                        </div>
-                        ${createTextarea('matchup_content', '對戰分析/亮點文案', '', 6)}
-                       
-                    `;
+                    html += createNextGameBlock('對戰賽事資訊（輸入 GAME 編號自動帶入）') +
+                        createTextarea('matchup_content','對戰亮點文案','請輸入本場對戰亮點',6) +
+                        createInput('matchup_cta','賽事引導標題','text','','本週末看頂尖對決');
                 } else if (mode === 'final_score') {
                     html += `
                         ${createInput('game_num', '場次 (GAME)', 'number', '1–126')}
@@ -3110,10 +3090,6 @@
                  if(t) t.addEventListener('change', (e) => handleTimeChange(e, 'next'));
                  if(g) g.addEventListener('input', (e) => handleGameNumChange(e, 'next'));
                  
-                 const na = document.getElementById('next_away');
-                 const nh = document.getElementById('next_home');
-                 if(na) na.addEventListener('change', () => updateSelect('mu_away_team', na.value));
-                 if(nh) nh.addEventListener('change', () => updateSelect('mu_home_team', nh.value));
              }
              
              if(mode === 'final_score' || mode === 'potg') {
@@ -3377,31 +3353,18 @@
                     output += `${COMMON_TAGS}`;
 
                 } else if (currentMode === 'matchup_highlight') {
-                     const home = getTeam(getValue('mu_home_team'));
-                     const away = getTeam(getValue('mu_away_team'));
-                     const homePlayer = getValue('mu_home_player');
-                     const awayPlayer = getValue('mu_away_player');
-                     
-                     output = `⚔️ ${toMathBoldSerif('MATCH UP')}｜${awayPlayer} ${away.emoji} vs. ${homePlayer} ${home.emoji}\n\n`;
-                     output += `${getValue('matchup_content')}\n\n-\n\n`;
-                     
-                     const date = getValue('next_date');
-                     if(date) {
-                         const mmdd = formatMMDD(date);
-                         const day = getDayChi(date);
-                         const time = getValue('next_time');
-                         const h = getTeam(getValue('next_home'));
-                         const a = getTeam(getValue('next_away'));
-                         const num = getValue('next_game_num');
-                         
-                         let arena = h.arena || "";
-                         const gameInDb = SEASON_SCHEDULE_DB.find(g => g.id == num);
-                         if(gameInDb && gameInDb.arena) arena = gameInDb.arena;
-
-                         output += `📌 今天晚上看頂尖對決：\n`;
-                         output += `▌${mmdd}（${day}）｜${time}｜${a.full}（客） vs. ${h.full}（主）｜${arena}\n\n`;
-                     }
-                     output += `${COMMON_TAGS}`;
+                    const home = getTeam(getValue('next_home')), away = getTeam(getValue('next_away'));
+                    output = '⚔️ ' + toMathBoldSerif('MATCH UP') + '｜ ' + away.emoji + ' vs. ' + home.emoji + '\n\n';
+                    output += getValue('matchup_content') + '\n\n-\n\n';
+                    const date = getValue('next_date');
+                    if (date) {
+                        const game = getGameById(getValue('next_game_num'));
+                        const arena = game?.arena || home.arena;
+                        output += '📌 ' + getValue('matchup_cta') + '：\n';
+                        output += '▌' + formatMMDD(date) + '（' + getDayChi(date) + '）｜' + getValue('next_time') + '｜' +
+                            away.full + '（客） vs. ' + home.full + '（主）｜' + arena + '\n\n';
+                    }
+                    output += COMMON_TAGS;
 
                 } else if (currentMode === 'final_score') {
                     output = `🔚 ${toMathBoldSerif('GAME')} ${toMathBoldSerif(getValue('game_num'))} ${toMathBoldSerif('FINAL')}｜${getValue('match_title')}\n\n`;
