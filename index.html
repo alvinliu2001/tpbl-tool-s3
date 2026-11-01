@@ -175,6 +175,7 @@
                     <button onclick="switchMode('game_highlight')" id="btn-game_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-film w-6 text-center"></i> 本場賽事精華</button>
                     <button onclick="switchMode('final_score')" id="btn-final_score" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-flag-checkered w-6 text-center"></i> 終場比分</button>
                     <button onclick="switchMode('potg')" id="btn-potg" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-bolt w-6 text-center"></i> 單場最佳球員</button>
+                    <button onclick="switchMode('zone_notice')" id="btn-zone_notice" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-bullhorn w-6 text-center"></i> 專區公告文字</button>
 
                     <div class="px-4 py-2 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wider">每週工事</div>
                     <button onclick="switchMode('weekly_schedule')" id="btn-weekly_schedule" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-calendar-week w-6 text-center"></i> 每週賽程表</button>
@@ -2348,6 +2349,11 @@
         function initAutoFillLogic(mode) {
              if(SEASON_SCHEDULE_DB.length === 0) return; 
              const today = todayTaipei();
+             if (mode === 'zone_notice') {
+                 const game = getNearestNextGame(today);
+                 if (game) updateVal('notice_game_num',game.id);
+                 return;
+             }
              if (YOUTUBE_MODES.includes(mode)) {
                  const game = getNearestNextGame(today);
                  if (game) {
@@ -2502,7 +2508,7 @@
         }
 
         // --- Switch Mode Logic ---
-        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","career_milestone","potw","top5","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
+        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","zone_notice","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","career_milestone","potw","top5","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
 
         function switchMode(mode) {
             try {
@@ -2533,6 +2539,7 @@
     "game_highlight": "本場賽事精華",
     "final_score": "終場比分",
     "potg": "單場最佳球員",
+    "zone_notice": "專區公告文字",
     "weekly_schedule": "每週賽程表",
     "weekly_standings": "每週戰績排行",
     "press_conf": "賽後記者會",
@@ -2601,6 +2608,9 @@
                         createTextarea('youtube_shopee','蝦皮合作文案（此模式可手動更新）','',5) +
                         createTextarea('youtube_description','影片描述','',14) +
                         '<button type="button" onclick="copyToClipboard(\'youtube_description\',\'copy-description-text\')" class="w-full bg-white border-2 border-gray-200 hover:border-brand-dark text-gray-800 font-bold py-3 px-4 rounded-lg transition"><span id="copy-description-text">複製影片描述</span></button>';
+                } else if (mode === 'zone_notice') {
+                    html += createInput('notice_game_num','場次（GAME）','number','1–126') +
+                        createInput('notice_live_url','直播連結','url','https://www.youtube.com/watch?v=...');
                 } else if (mode === 'game_preview') {
                     html += `
                         <div class="flex items-end gap-2 mb-4">
@@ -3312,6 +3322,15 @@
                         } else {
                             output = '【賽後記者會】蝦皮購物 TPBL 2026-27 例行賽 ' + number + ' ' + matchup + ' ' + date;
                         }
+                    }
+                } else if (currentMode === 'zone_notice') {
+                    const game = getGameById(getValue('notice_game_num'));
+                    if (game) {
+                        const date = parseDateLocal(game.date), away = getTeam(game.away), home = getTeam(game.home);
+                        output = '🤫 ' + toMathBoldSerif('FOR REAL GAMEDAY') + '｜G-' + String(game.id).padStart(3,'0') + ' 賽事預告 📢\n\n';
+                        output += 'TPBL 例行賽｜' + (date.getMonth()+1) + '/' + date.getDate() + ' ' + game.time + ' ';
+                        output += away.emoji + ' ' + game.away + ' vs ' + game.home + ' ' + home.emoji + ' @' + game.arena + '\n\n';
+                        output += '📺 跟我們一起準時上線看球賽：\n' + getValue('notice_live_url');
                     }
                 } else if (currentMode === 'game_preview') {
                     const date = getValue('match_date');
