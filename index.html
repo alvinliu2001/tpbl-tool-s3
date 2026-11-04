@@ -2705,13 +2705,21 @@
                              </div>
                              ${createInput('lp_title', '亮點標題（自動加上球隊 Emoji、姓名與 FOR REAL）', 'text', '狂飆 37 分接管戰局，海神主場首勝入袋！')}
                         </div>
+                        <div class="p-3 bg-gray-50 border rounded-md">
+                            <p class="text-sm font-bold text-gray-700 mb-2">第二位球員（選填）</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                ${createTeamSelect('lp_team2', '第二位球隊')}
+                                ${createPlayerSelect('lp_name2', '第二位球員', 'lp_team2')}
+                            </div>
+                            <button type="button" onclick="clearSecondHighlightPlayer()" class="mt-3 text-xs text-red-500">清除第二位球員</button>
+                        </div>
                         ${createTextarea('lp_content', '球員表現描述', '', 4)}
                         ${createInput('lp_next_intro', '下場賽事引導句（不需輸入 📌 與結尾冒號）', 'text', '例如：下一場，貝西里隨海神揮軍北上；留白自動帶入球員姓名')}
                         ${createNextGameBlock("下場賽事資訊 (Next Game)")}
                     `;
                 } else if (mode === 'career_milestone') {
                     html += `
-                        ${createInput('ms_title', '紀錄標題 (例如：防線上的盜球高手，百抄達成！👌)', 'text')}
+                        ${createInput('ms_title', '紀錄標題（自動加上 🤫 STATS FOR REAL｜）', 'text')}
                         
                         <div class="p-3 bg-gray-50 border rounded-md mb-4">
                             <p id="ms_subject_heading" class="text-sm font-bold text-gray-700 mb-2">達成球員</p>
@@ -2735,6 +2743,12 @@
                             <input id="ms_achievement" readonly class="w-full p-2.5 border rounded-md" placeholder="請選擇成就條件">
                         </div>
                         ${createTextarea('ms_content', '內容描述', '', 5)}
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <p class="text-sm font-bold mb-2">本場數據（可增減）</p>
+                            <div id="stats_list_container" class="space-y-2"></div>
+                            <button type="button" onclick="addStatItem()" class="mt-2 text-sm font-bold text-brand-gold">＋新增數據</button>
+                        </div>
+                        ${createNextGameBlock('下場賽事資訊（選擇球隊自動帶入）')}
                     `;
                 } else if (mode === 'weekly_schedule') {
                     html += `
@@ -2943,6 +2957,7 @@
                 }
 
                 container.innerHTML = html;
+                if (mode === 'career_milestone') addStatItem();
                 if (YOUTUBE_MODES.includes(mode)) {
                     const number = document.getElementById('youtube_game_num'), select = document.getElementById('youtube_game_select');
                     number.oninput = () => {
@@ -2980,6 +2995,13 @@
             ['ms_interval','比賽區間',['單場','半場','單節']],
             ['ms_stat','數據項目',['得分','籃板','助攻','抄截','阻攻']]
         ];
+        function clearSecondHighlightPlayer() {
+            const team = document.getElementById('lp_team2');
+            if (!team) return;
+            team.value = '';
+            team.dispatchEvent(new Event('change',{bubbles:true}));
+            saveToLocal(); generateCopy();
+        }
         function createRecordSelects() {
             return RECORD_FIELDS.map(([id,label,options]) =>
                 '<div><label for="' + id + '" class="block text-sm font-medium mb-1">' + label + '</label>' +
@@ -3179,6 +3201,10 @@
                  const t = document.getElementById('lp_team');
                  if(t) t.addEventListener('change', handlePlayerTeamChangeForNextGame);
              }
+             if(mode === 'career_milestone') {
+                 const team = document.getElementById('ms_team');
+                 if(team) team.addEventListener('change',handlePlayerTeamChangeForNextGame);
+             }
              if(mode === 'press_conf') {
                  const t = document.getElementById('pc_team_select');
                  if(t) t.addEventListener('change', handlePlayerTeamChangeForNextGame);
@@ -3260,9 +3286,22 @@
                     ${typeOptions}
                 </select>
                 <input type="text" id="stat_cust_${idx}" placeholder="自訂單位" class="flex-1 p-2 border rounded text-sm hidden focus:ring-brand-gold focus:border-brand-gold">
-                <button onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">&times;</button>
+                <button type="button" onclick="removeStatItem(this)" class="text-red-500 font-bold px-2" aria-label="移除此數據">&times;</button>
             `;
             container.appendChild(div);
+        }
+
+        function removeStatItem(button) {
+            const container = button.parentElement.parentElement;
+            button.parentElement.remove();
+            Array.from(container.children).forEach((row,index) => {
+                const fields = row.querySelectorAll('input[type="text"]'), select = row.querySelector('select');
+                fields[0].id = 'stat_val_' + index;
+                fields[1].id = 'stat_cust_' + index;
+                select.id = 'stat_type_' + index;
+                select.setAttribute('onchange','toggleCustomStat(' + index + ')');
+            });
+            saveToLocal(); generateCopy();
         }
 
         function toggleCustomStat(idx) {
@@ -3494,14 +3533,20 @@
                     const name = getValue('lp_name');
                     const titleSuffix = getValue('lp_title');
                     
-                    output = `${team.emoji} ${name} ${toMathBoldSerif('FOR REAL')}｜${titleSuffix}\n\n`;
+                    let players = `${team.emoji} ${name}`;
+                    const secondName = getValue('lp_name2'), secondTeamKey = getValue('lp_team2');
+                    if (secondName && secondTeamKey) {
+                        const secondEmoji = secondTeamKey === getValue('lp_team') ? '' : getTeam(secondTeamKey).emoji + ' ';
+                        players += ` & ${secondEmoji}${secondName}`;
+                    }
+                    output = `${players} ${toMathBoldSerif('FOR REAL')}｜${titleSuffix}\n\n`;
                     output += `${getValue('lp_content')}\n\n-\n\n`;
                     output += getLocalPlayerNextGame();
                     output += `\n\n${COMMON_TAGS}`;
 
                 } else if (currentMode === 'career_milestone') {
                     updateRecordSubject();
-                    output = `${getValue('ms_title')}\n\n`;
+                    output = `🤫 ${toMathBoldSerif('STATS FOR REAL')}｜${getValue('ms_title')}\n\n`;
                     
                     const msNum = getValue('ms_num');
                     const msName = getValue('ms_name');
@@ -3511,16 +3556,29 @@
                         const teamKey = getValue('ms_team');
                         playerInfo = teamKey ? `${getTeam(teamKey).emoji} ${getTeam(teamKey).full}` : '';
                     } else if(msName) {
-                        playerInfo = `#${msNum} ${msName}`;
+                        playerInfo = `＃${msNum} ${msName}`;
                         if(msEng) playerInfo += ` ${msEng}`;
                     }
                     
-                    output += `${playerInfo}\n`;
+                    const stats = Array.from(document.querySelectorAll('#stats_list_container > div')).map(row => {
+                        const fields = row.querySelectorAll('input[type="text"]');
+                        const value = fields[0].value, selected = row.querySelector('select').value;
+                        const unit = selected === 'custom' ? fields[1].value : selected;
+                        return value ? `${value} ${unit}`.trim() : '';
+                    }).filter(Boolean);
+                    output += playerInfo + (stats.length ? '｜' + stats.join(' / ') : '') + '\n';
                     const parts = ['ms_result','ms_level','ms_scope','ms_interval','ms_stat'].map(getValue);
                     const achievement = parts.every(Boolean) ? parts.join('') + '紀錄' : '';
                     document.getElementById('ms_achievement').value = achievement;
-                    output += `${achievement}\n`;
+                    if (achievement) output += `${achievement} 🏅\n\n`;
                     output += `${getValue('ms_content')}\n\n`;
+                    const date = getValue('next_date');
+                    if (date) {
+                        const home = getTeam(getValue('next_home')), away = getTeam(getValue('next_away'));
+                        const arena = getGameById(getValue('next_game_num'))?.arena || home.arena;
+                        const subject = getValue('ms_subject') === '球隊' ? getValue('ms_team') : msName;
+                        output += `-\n\n📌 下一場，${subject}：\n▌${formatMMDD(date)}（${getDayChi(date)}）｜${getValue('next_time')}｜${away.full}（客） vs. ${home.full}（主）｜${arena}\n\n`;
+                    }
                     output += `${COMMON_TAGS}`;
 
                 } else if (currentMode === 'weekly_schedule') {
