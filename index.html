@@ -3556,7 +3556,8 @@
                         const teamKey = getValue('ms_team');
                         playerInfo = teamKey ? `${getTeam(teamKey).emoji} ${getTeam(teamKey).full}` : '';
                     } else if(msName) {
-                        playerInfo = `＃${msNum} ${msName}`;
+                        const team = getTeam(getValue('ms_team'));
+                        playerInfo = `${team.emoji} ${team.full} ＃${msNum} ${msName}`;
                         if(msEng) playerInfo += ` ${msEng}`;
                     }
                     
