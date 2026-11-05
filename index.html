@@ -3575,6 +3575,7 @@
                     const parts = ['ms_result','ms_level','ms_scope','ms_interval','ms_stat'].map(getValue);
                     const category = getValue('ms_player_category');
                     if (category) parts[1] = parts[1] === '球員個人生涯' ? category + parts[1] : parts[1] + category + '球員';
+                    if (getValue('ms_subject') === '球隊') parts.splice(4, 0, '團隊');
                     const achievement = ['ms_result','ms_level','ms_scope','ms_interval','ms_stat'].every(id => getValue(id)) ? parts.join('') + '紀錄' : '';
                     document.getElementById('ms_achievement').value = achievement;
                     if (achievement) output += `${achievement} 🏅\n\n`;
