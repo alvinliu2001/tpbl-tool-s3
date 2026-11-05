@@ -2991,6 +2991,7 @@
             ['ms_subject','主體',['球員','球隊']],
             ['ms_result','結果',['刷新','追平']],
             ['ms_level','紀錄層級',['聯盟歷史','本季','球員個人生涯']],
+            ['ms_player_category','球員類別（選填）',['本土','外籍']],
             ['ms_scope','賽事範圍',['例行賽','季後賽','總冠軍賽']],
             ['ms_interval','比賽區間',['單場','半場','單節']],
             ['ms_stat','數據項目',['得分','籃板','助攻','抄截','阻攻']]
@@ -3006,7 +3007,7 @@
             return RECORD_FIELDS.map(([id,label,options]) =>
                 '<div><label for="' + id + '" class="block text-sm font-medium mb-1">' + label + '</label>' +
                 '<select id="' + id + '" class="w-full p-2.5 border rounded-md bg-white">' +
-                (id === 'ms_subject' ? '' : '<option value="">請選擇</option>') +
+                (id === 'ms_subject' ? '' : '<option value="">' + (id === 'ms_player_category' ? '不指定（全體球員）' : '請選擇') + '</option>') +
                 options.map(value => '<option value="' + value + '">' + value + '</option>').join('') +
                 '</select></div>'
             ).join('');
@@ -3019,6 +3020,9 @@
             const career = Array.from(level.options).find(option => option.value === '球員個人生涯');
             career.disabled = team;
             if (team && level.value === '球員個人生涯') level.value = '';
+            const category = document.getElementById('ms_player_category');
+            category.disabled = team;
+            if (team) category.value = '';
         }
 
         function createMonthlyPeriod(prefix) {
@@ -3569,7 +3573,9 @@
                     }).filter(Boolean);
                     output += playerInfo + (stats.length ? '｜' + stats.join(' / ') : '') + '\n';
                     const parts = ['ms_result','ms_level','ms_scope','ms_interval','ms_stat'].map(getValue);
-                    const achievement = parts.every(Boolean) ? parts.join('') + '紀錄' : '';
+                    const category = getValue('ms_player_category');
+                    if (category) parts[1] = parts[1] === '球員個人生涯' ? category + parts[1] : parts[1] + category + '球員';
+                    const achievement = ['ms_result','ms_level','ms_scope','ms_interval','ms_stat'].every(id => getValue(id)) ? parts.join('') + '紀錄' : '';
                     document.getElementById('ms_achievement').value = achievement;
                     if (achievement) output += `${achievement} 🏅\n\n`;
                     output += `${getValue('ms_content')}\n\n`;
