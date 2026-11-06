@@ -186,9 +186,12 @@
                     <button onclick="switchMode('weekday_preview')" id="btn-weekday_preview" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-calendar-day w-6 text-center"></i> 週間賽事預告</button>
                     <button onclick="switchMode('matchup_highlight')" id="btn-matchup_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-bullseye w-6 text-center"></i> 賽前對戰亮點</button>
                     <button onclick="switchMode('local_player_highlight')" id="btn-local_player_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-star w-6 text-center"></i> 球員傑出表現</button>
-                    <button onclick="switchMode('career_milestone')" id="btn-career_milestone" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-crown w-6 text-center"></i> 聯盟數據記錄</button>
                     <button onclick="switchMode('potw')" id="btn-potw" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-trophy w-6 text-center"></i> 單週最佳球員</button>
                     <button onclick="switchMode('top5')" id="btn-top5" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-video w-6 text-center"></i> 本週五大好球</button>
+
+                    <div class="px-4 py-2 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wider">數據管理</div>
+                    <button onclick="switchMode('career_milestone')" id="btn-career_milestone" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-crown w-6 text-center"></i> 聯盟數據記錄</button>
+                    <button onclick="switchMode('player_career_milestone')" id="btn-player_career_milestone" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-medal w-6 text-center"></i> 球員生涯里程碑</button>
 
                     <div class="px-4 py-2 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wider">每月專題</div>
                     <button onclick="switchMode('100_reasons')" id="btn-100_reasons" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-heart w-6 text-center"></i> 一百種喜歡籃球的原因</button>
@@ -2508,7 +2511,7 @@
         }
 
         // --- Switch Mode Logic ---
-        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","zone_notice","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","career_milestone","potw","top5","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
+        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","zone_notice","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","potw","top5","career_milestone","player_career_milestone","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
 
         function switchMode(mode) {
             try {
@@ -2547,6 +2550,7 @@
     "matchup_highlight": "賽前對戰亮點",
     "local_player_highlight": "球員傑出表現",
     "career_milestone": "聯盟數據記錄",
+    "player_career_milestone": "球員生涯里程碑",
     "potw": "單週最佳球員",
     "top5": "本週五大好球",
     "100_reasons": "一百種喜歡籃球的原因",
@@ -2716,6 +2720,24 @@
                         ${createTextarea('lp_content', '球員表現描述', '', 4)}
                         ${createInput('lp_next_intro', '下場賽事引導句（不需輸入 📌 與結尾冒號）', 'text', '例如：下一場，貝西里隨海神揮軍北上；留白自動帶入球員姓名')}
                         ${createNextGameBlock("下場賽事資訊 (Next Game)")}
+                    `;
+                } else if (mode === 'player_career_milestone') {
+                    html += `
+                        <p class="text-sm text-gray-500">標題依球員姓名與累計數據自動產生。</p>
+                        <div class="p-3 bg-gray-50 border rounded-md">
+                            <div class="grid grid-cols-12 gap-2">
+                                <div class="col-span-4">${createTeamSelect('pm_team', '球隊')}</div>
+                                <div class="col-span-5">${createPlayerSelect('pm_name', '球員', 'pm_team', 'pm_num')}</div>
+                                <div class="col-span-3"><label for="pm_num" class="block text-sm font-medium mb-1">背號</label><input id="pm_num" readonly class="w-full p-2.5 border rounded-md text-center bg-gray-100"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${createInput('pm_total', 'TPBL 累計數據數值', 'text', '例如：1000')}
+                            ${createInput('pm_unit', '數據單位', 'text', '例如：分')}
+                        </div>
+                        ${createInput('pm_date', '達成日期', 'date')}
+                        ${createTextarea('pm_content', '內容描述', '', 5)}
+                        ${createNextGameBlock('下場賽事資訊（選擇球隊自動帶入）')}
                     `;
                 } else if (mode === 'career_milestone') {
                     html += `
@@ -3209,6 +3231,9 @@
                  const team = document.getElementById('ms_team');
                  if(team) team.addEventListener('change',handlePlayerTeamChangeForNextGame);
              }
+             if(mode === 'player_career_milestone') {
+                 document.getElementById('pm_team').addEventListener('change',handlePlayerTeamChangeForNextGame);
+             }
              if(mode === 'press_conf') {
                  const t = document.getElementById('pc_team_select');
                  if(t) t.addEventListener('change', handlePlayerTeamChangeForNextGame);
@@ -3548,6 +3573,29 @@
                     output += getLocalPlayerNextGame();
                     output += `\n\n${COMMON_TAGS}`;
 
+                } else if (currentMode === 'player_career_milestone') {
+                    const teamKey = getValue('pm_team'), name = getValue('pm_name');
+                    const team = getTeam(teamKey);
+                    const total = getValue('pm_total'), unit = getValue('pm_unit');
+                    const achievement = name && total && unit ? `${name}達成 TPBL 累計數據 ${total} ${unit} 🏅` : '';
+                    output = `🤫 ${toMathBoldSerif('RECORD FOR REAL')}｜${achievement}\n\n`;
+                    if (teamKey && name) {
+                        output += `${team.emoji} ${team.full} ＃${getValue('pm_num')} ${name}`;
+                        const achievedDate = getValue('pm_date');
+                        if (achievedDate) {
+                            const [year, month, day] = achievedDate.split('-');
+                            output += `｜${year}.${Number(month)}.${Number(day)}`;
+                        }
+                        output += '\n\n';
+                    }
+                    output += `${getValue('pm_content')}\n\n`;
+                    const date = getValue('next_date');
+                    if (date) {
+                        const home = getTeam(getValue('next_home')), away = getTeam(getValue('next_away'));
+                        const arena = getGameById(getValue('next_game_num'))?.arena || home.arena;
+                        output += `-\n\n📌 下一場，${name}：\n\n▌${formatMMDD(date)}（${getDayChi(date)}）｜${getValue('next_time')}｜${away.full}（客） vs. ${home.full}（主）｜${arena}\n\n`;
+                    }
+                    output += COMMON_TAGS;
                 } else if (currentMode === 'career_milestone') {
                     updateRecordSubject();
                     output = `🤫 ${toMathBoldSerif('STATS FOR REAL')}｜${getValue('ms_title')}\n\n`;
