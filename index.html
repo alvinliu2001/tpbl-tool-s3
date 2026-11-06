@@ -188,6 +188,7 @@
                     <button onclick="switchMode('local_player_highlight')" id="btn-local_player_highlight" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-star w-6 text-center"></i> 球員傑出表現</button>
                     <button onclick="switchMode('potw')" id="btn-potw" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-trophy w-6 text-center"></i> 單週最佳球員</button>
                     <button onclick="switchMode('top5')" id="btn-top5" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-video w-6 text-center"></i> 本週五大好球</button>
+                    <button onclick="switchMode('wild_ending')" id="btn-wild_ending" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-hourglass-half w-6 text-center"></i> 末節激戰</button>
 
                     <div class="px-4 py-2 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wider">數據管理</div>
                     <button onclick="switchMode('career_milestone')" id="btn-career_milestone" class="sidebar-item w-full text-left px-6 py-3 hover:bg-gray-800 transition flex items-center gap-3"><i class="fa-solid fa-crown w-6 text-center"></i> 聯盟數據記錄</button>
@@ -2511,7 +2512,7 @@
         }
 
         // --- Switch Mode Logic ---
-        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","zone_notice","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","potw","top5","career_milestone","player_career_milestone","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
+        const VALID_MODES = ["game_preview","game_highlight","final_score","potg","zone_notice","weekly_schedule","weekly_standings","press_conf","weekday_preview","matchup_highlight","local_player_highlight","potw","top5","wild_ending","career_milestone","player_career_milestone","100_reasons","monthly_kicks","season_stats","monthly_mvp_vote","monthly_mvp_award","youtube_full_highlight","youtube_live","youtube_press_live"];
 
         function switchMode(mode) {
             try {
@@ -2548,6 +2549,7 @@
     "press_conf": "賽後記者會",
     "weekday_preview": "週間賽事預告",
     "matchup_highlight": "賽前對戰亮點",
+    "wild_ending": "末節激戰",
     "local_player_highlight": "球員傑出表現",
     "career_milestone": "聯盟數據記錄",
     "player_career_milestone": "球員生涯里程碑",
@@ -2647,6 +2649,11 @@
                         ${createTextarea('promo_text', '預告文案', '本季首次交手的...', 4)}
                         ${createTextarea('promo_link', '贊助商版位 (可換行)', '📍 SPORTS NATIONS 店點資訊...', 3)}
                     `;
+                } else if (mode === 'wild_ending') {
+                    html += createInput('wild_title','標題（自動加上 ⏳ WILD ENDING｜）','text') +
+                        createTextarea('wild_content','內文','',10) +
+                        createInput('wild_cta','賽事引導句（不需輸入 📌 與結尾冒號）','text','例如：週日看雲豹戰神首次交鋒') +
+                        createNextGameBlock('預告賽事資訊（輸入 GAME 編號自動帶入）');
                 } else if (mode === 'matchup_highlight') {
                     html += createNextGameBlock('對戰賽事資訊（輸入 GAME 編號自動帶入）') +
                         createTextarea('matchup_content','對戰亮點文案','請輸入本場對戰亮點',6) +
@@ -3481,15 +3488,16 @@
                     if(getValue('promo_link')) output += `${getValue('promo_link')}\n\n`;
                     output += `${COMMON_TAGS}`;
 
-                } else if (currentMode === 'matchup_highlight') {
+                } else if (['matchup_highlight','wild_ending'].includes(currentMode)) {
                     const home = getTeam(getValue('next_home')), away = getTeam(getValue('next_away'));
-                    output = '⚔️ ' + toMathBoldSerif('MATCH UP') + '｜ ' + away.full + ' ' + away.emoji + ' vs. ' + home.full + ' ' + home.emoji + '\n\n';
-                    output += getValue('matchup_content') + '\n\n-\n\n';
+                    const wild = currentMode === 'wild_ending';
+                    output = wild ? '⏳ ' + toMathBoldSerif('WILD ENDING') + '｜ ' + getValue('wild_title') + '\n\n' : '⚔️ ' + toMathBoldSerif('MATCH UP') + '｜ ' + away.full + ' ' + away.emoji + ' vs. ' + home.full + ' ' + home.emoji + '\n\n';
+                    output += getValue(wild ? 'wild_content' : 'matchup_content') + '\n\n-\n\n';
                     const date = getValue('next_date');
                     if (date) {
                         const game = getGameById(getValue('next_game_num'));
                         const arena = game?.arena || home.arena;
-                        output += '📌 ' + getValue('matchup_cta') + '：\n';
+                        output += '📌 ' + getValue(wild ? 'wild_cta' : 'matchup_cta') + '：\n';
                         output += '▌' + formatMMDD(date) + '（' + getDayChi(date) + '）｜' + getValue('next_time') + '｜' +
                             away.full + '（客） vs. ' + home.full + '（主）｜' + arena + '\n\n';
                     }
