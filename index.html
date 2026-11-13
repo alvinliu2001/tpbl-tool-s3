@@ -1969,28 +1969,30 @@
         const YOUTUBE_SOCIAL = 'TPBL Official Website ◼︎ https://tpbl.basketball/\nTPBL IG ◼︎ https://www.instagram.com/tpbl.tw/\nTPBL FB ◼︎ https://www.facebook.com/TPBL.Basketball';
         const YOUTUBE_LIVE_SOCIAL = 'TPBL Official Website ◼︎ https://tpbl.basketball/\nTPBL Instagram ◼︎ https://www.instagram.com/tpbl.tw/\nTPBL Facebook ◼︎ https://www.facebook.com/TPBL.Basketball';
         const YOUTUBE_MERCH = 'TPBL 官方系列商品 ◼︎ https://shopee.tw/inmories';
-        const YOUTUBE_SHOPEE_DEFAULT = '💥 蝦皮 VIP 月月送 60 蝦幣\n蝦皮 VIP 享全賽季主場商品部限量 9 折\nhttps://sho.pe/9mu52f';
-        const YOUTUBE_LIVE_SHOPEE = '💥 11.11 蝦幣 100%回饋，蝦皮VIP天天抽長榮機票\nhttps://sho.pe/9mu52f';
-        const YOUTUBE_PRESS_SHOPEE = '🦐11.11 蝦幣 100%回饋，蝦皮VIP天天抽長榮機票\nhttps://sho.pe/9mu52f';
-        const YOUTUBE_LEXAR = '💥極速存儲FOR REAL，精采畫面我們來真的！\nhttps://www.lexar.com/zh-hant/';
-        const YOUTUBE_BACKBONE = '💥決勝時刻，挺身而出💥\n【 Backbone 椎座工學 ｜限時全站滿萬折千，為你的觀賽體驗升級】\n人體工學椅 👉 https://lihi3.me/F5q9Z\n電動升降桌 👉 https://lihi3.me/mQkvq\n做場下最扎實的後盾，挺你每個關鍵瞬間💪🏻';
-        const YOUTUBE_MINGYI = '球員在賽場上全力以赴，也需要適時放鬆與恢復。\n明易以職業運動員按摩水準，客製化照顧每一個職業，\n陪伴大家照顧運動後與忙碌日常中的身體。\n\n點擊下方連結領取，邀請你把恢復帶進日常。\nTPBL 球迷 9 折券專屬連結：https://lihi2.me/ScMbz\n加入明易會員，24小時線上預約：https://lihi1.me/MI0gQ';
+        const YOUTUBE_SHOPEE_DEFAULT = '💥 蝦皮應援你！週週抽賽季門票\n入場再抽 $10,000 優惠券\nhttps://sho.pe/9mu52f';
+        const YOUTUBE_LEXAR = '💥 極速存儲 FOR REAL，精采畫面我們來真的！\nhttps://www.lexar.com/zh-hant/';
+        const YOUTUBE_BACKBONE = '💥 決勝時刻，挺身而出 💥\n【 Backbone 椎座工學 ｜限時全站滿萬折千，為你的觀賽體驗升級】\n人體工學椅 👉 https://lihi3.me/F5q9Z\n電動升降桌 👉 https://lihi3.me/mQkvq\n\n做場下最扎實的後盾，挺你每個關鍵瞬間 💪🏻';
+        const YOUTUBE_MINGYI = '💥 明易以職業運動員按摩水準，客製化照顧每一個職業，陪伴大家照顧運動後與忙碌日常中的身體。\n點擊下方連結領取，邀請你把恢復帶進日常。\nTPBL 球迷 9 折券專屬連結：https://lihi2.me/ScMbz\n加入明易會員，24小時線上預約：https://lihi1.me/MI0gQ';
         const YOUTUBE_TAGS = '#TPBL #FORREAL #來真的 #TPBL例行賽 #蝦皮購物';
         const YOUTUBE_LIVE_TAGS = '#TPBL #FORREAL #來真的 #TPBL例行賽 #蝦皮購物';
         const YOUTUBE_PRESS_TAGS = '#TPBL #FORREAL #來真的 #TPBL例行賽 #賽後記者會';
         function youtubeShopeeKey(mode) {
-            return STORAGE_PREFIX + (mode === 'youtube_full_highlight' ? 'youtube_shopee' : mode + '_shopee_20261029');
+            return STORAGE_PREFIX + mode + '_shopee_20261113';
         }
         function getYoutubeShopee(mode=currentMode) {
-            const fallback = mode === 'youtube_live' ? YOUTUBE_LIVE_SHOPEE : mode === 'youtube_press_live' ? YOUTUBE_PRESS_SHOPEE : YOUTUBE_SHOPEE_DEFAULT;
+            const fallback = YOUTUBE_SHOPEE_DEFAULT;
             try { return localStorage.getItem(youtubeShopeeKey(mode)) ?? fallback; }
             catch { return fallback; }
         }
-        function buildYoutubeDescription(mode,shopee) {
+        function buildYoutubeDescription(mode,shopee,gameId) {
             const press = mode === 'youtube_press_live';
             const sections = [(mode === 'youtube_full_highlight' ? YOUTUBE_SOCIAL : YOUTUBE_LIVE_SOCIAL) + '\n' + YOUTUBE_MERCH];
+            if (mode === 'youtube_live') sections.push(YOUTUBE_LEXAR);
             if (shopee) sections.push(shopee);
-            if (mode === 'youtube_live') sections.push(YOUTUBE_LEXAR,YOUTUBE_BACKBONE,YOUTUBE_MINGYI);
+            if (mode === 'youtube_live') {
+                sections.push(YOUTUBE_BACKBONE);
+                if (gameId >= 1 && gameId <= 41) sections.push(YOUTUBE_MINGYI);
+            }
             sections.push(press ? YOUTUBE_PRESS_TAGS : mode === 'youtube_live' ? YOUTUBE_LIVE_TAGS : YOUTUBE_TAGS);
             return sections.join('\n\n');
         }
@@ -3417,7 +3419,7 @@
 
                 if (YOUTUBE_MODES.includes(currentMode)) {
                     const game = getGameById(getValue('youtube_game_num'));
-                    document.getElementById('youtube_description').value = buildYoutubeDescription(currentMode,getValue('youtube_shopee'));
+                    document.getElementById('youtube_description').value = buildYoutubeDescription(currentMode,getValue('youtube_shopee'),game?.id);
                     if (game) {
                         const a = getTeam(game.away), h = getTeam(game.home), matchup = a.full + ' vs. ' + h.full;
                         const number = 'G' + String(game.id).padStart(3,'0');
