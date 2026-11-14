@@ -2637,7 +2637,7 @@
                         
                         ${createSelect('broadcast_channel', '電視轉播', ['緯來電視網', 'MOMOTV'])}
                         ${createTextarea('highlight_text', '觀賽亮點', '輸入本場看點文案...', 6)}
-                        ${createInput('yt_link', 'YouTube 轉播連結', 'text')}
+                        ${createInput('yt_link', 'TPBL 官方 YouTube 轉播連結', 'text')}
                     `;
                 } else if (mode === 'weekday_preview') {
                     html += `
@@ -3458,16 +3458,16 @@
                     
                     const headerDate = `${toMathBoldSerif(formatMonthDay(date))}（${toMathBoldSerif(getDayName(date))}）`; 
                     
-                    // NEW: Dynamic Broadcast Logic
                     const channel = getValue('broadcast_channel') || '緯來電視網';
-                    const broadcastText = `👉🏻 轉播平台 📺 ${channel}${BROADCAST_FIXED}`;
 
                     output = `🏀 ${toMathBoldSerif('GAMEDAY')} & ${toMathBoldSerif('ROSTER')}｜${headerDate}\n\n`;
                     // Updated Format: Game (space) Num, Time bolded
                     output += `例行賽 ${toMathBoldSerif('GAME')} ${toMathBoldSerif(getValue('game_num'))} ✦ ${toMathBoldSerif(time)} ${away.emoji} ${awayKey} vs ${homeKey} ${home.emoji} ✦\n\n`;
                     output += `${getValue('highlight_text')}\n\n-\n\n`;
-                    output += `👉🏻 賽事地點 📍 ${arena}\n${broadcastText}\n`;
-                    output += `👉🏻 YT轉播連結｜${getValue('yt_link')}\n\n`;
+                    output += `📍 賽事地點｜${arena}\n`;
+                    output += `📺 轉播平台｜${channel} / 博斯運動二台 / DAZN / 緯來電視網 APP\n`;
+                    output += `▶️ TPBL 官方 YouTube｜${getValue('yt_link')}\n`;
+                    output += `▶️ AXN English Broadcast｜https://www.youtube.com/@AXNAsiaSports\n\n`;
                     output += `${GAMEDAY_TAGS}`;
 
                 } else if (currentMode === 'weekday_preview') {
