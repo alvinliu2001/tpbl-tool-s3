@@ -2687,9 +2687,11 @@
                          <div class="mb-4">
                              ${createTeamSelect('pc_team_select', '受訪球隊 (選擇以帶入下場賽事)')}
                          </div>
-                        ${createInput('pc_title', '標題 (英文/中文)', 'text', '🗣️ FACING THE STORM...')}
+                        ${createInput('pc_title', '標題（自動加上 🗣️ WORDS FOR REAL｜）', 'text')}
                         ${createTextarea('pc_quote', '語錄 (不需要打引號)', '', 3)}
+                        ${createInput('pc_speaker', '受訪者職稱與姓名', 'text', '例如：總經理 顏行書')}
                         ${createTextarea('pc_content', '內容', '', 6)}
+                        ${createInput('pc_next_intro', '下場賽事引導句（不需輸入 📌 與結尾冒號）', 'text', '例如：下週雲豹作客台中，迎來與夢想家的首次對決')}
                         ${createNextGameBlock("下場賽事資訊 (Next Game)")}
                     `;
                 } else if (mode === 'potg') {
@@ -3532,9 +3534,13 @@
                     output += `${COMMON_TAGS}`;
 
                 } else if (currentMode === 'press_conf') {
-                    output = `🗣️${toMathBoldSerif(getValue('pc_title'))}\n\n`;
-                    output += `💬「${getValue('pc_quote')}」\n\n`;
-                    output += `${getValue('pc_content')}\n\n`;
+                    const teamKey = getValue('pc_team_select');
+                    const team = getTeam(teamKey);
+                    const speaker = [teamKey ? `${team.full} ${team.emoji}` : '', getValue('pc_speaker')].filter(Boolean).join(' ');
+                    const quote = getValue('pc_quote');
+                    output = `🗣️ ${toMathBoldSerif('WORDS FOR REAL')}｜${getValue('pc_title')}\n\n`;
+                    if (quote) output += `💬「${quote}」${speaker ? ` —— ${speaker}` : ''}\n\n`;
+                    output += getValue('pc_content');
                     
                     const date = getValue('next_date');
                     if(date) {
@@ -3545,14 +3551,13 @@
                         const away = getTeam(getValue('next_away'));
                         const num = getValue('next_game_num');
                         
-                        // --- 修正處：定義 teamName 變數 ---
-                        const teamName = getValue('pc_team_select') || "比賽"; 
+                        const intro = getValue('pc_next_intro') || '下一場賽事';
                         
                         let arena = home.arena || "";
                         const gameInDb = SEASON_SCHEDULE_DB.find(g => g.id == num);
                         if(gameInDb && gameInDb.arena) arena = gameInDb.arena;
                         
-                        output += `-\n\n📌 下場${teamName}：\n▌${mmdd}（${day}）｜${time}｜${away.full}（客） vs. ${home.full}（主）｜${arena}`;
+                        output += `\n\n-\n\n📌 ${intro}：\n▌${mmdd}（${day}）｜${time}｜${away.full}（客） vs. ${home.full}（主）｜${arena}`;
                     }
                     output += `\n\n${COMMON_TAGS}`;
 
