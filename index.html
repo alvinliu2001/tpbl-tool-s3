@@ -1915,6 +1915,11 @@
             "name": "加爾文",
             "num": "52",
             "position": "PF"
+        },
+        {
+            "name": "杭特",
+            "num": "12",
+            "category": "外籍"
         }
     ]
 };
@@ -2158,7 +2163,8 @@
 
         // 本季以使用者提供的附件為準，不連線至上一季 Google 試算表。
         function fetchAllData() {
-            document.getElementById('sync-status').textContent = '26–27 資料就緒｜126 場・114 位球員';
+            const playerCount = Object.values(ROSTERS).reduce((count, roster) => count + roster.length, 0);
+            document.getElementById('sync-status').textContent = `26–27 資料就緒｜126 場・${playerCount} 位球員`;
         }
 
         const createInput = (id, label, type="text", placeholder="", value="") => `
