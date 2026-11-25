@@ -2653,8 +2653,9 @@
                             ${createTeamSelect('match_away', '客隊 (Away)')}
                             ${createTeamSelect('match_home', '主隊 (Home)')}
                         </div>
-                        ${createInput('promo_title', '預告標題 (如：WEDNESDAY NIGHT...)', 'text', 'WEDNESDAY NIGHT, GAME ONNNN')}
+                        ${createInput('promo_title', '預告標題（自動加上 🌃 星期英文 NIGHT FOR REAL｜）', 'text')}
                         ${createTextarea('promo_text', '預告文案', '本季首次交手的...', 4)}
+                        ${createInput('promo_cta', '賽事引導句（不需輸入 📌 與結尾冒號）', 'text', '例如：明晚看獅群強襲迷你蛋')}
                         ${createTextarea('promo_link', '贊助商版位 (可換行)', '📍 SPORTS NATIONS 店點資訊...', 3)}
                     `;
                 } else if (mode === 'wild_ending') {
@@ -3482,7 +3483,7 @@
                     const date = getValue('match_date');
                     const home = getTeam(getValue('match_home'));
                     const away = getTeam(getValue('match_away'));
-                    const dayName = getDayName(date); 
+                    const dayName = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][parseDateLocal(date).getDay()] || '';
                     const mmdd = formatMMDD(date); 
                     const dayChi = getDayChi(date); 
                     const title = getValue('promo_title');
@@ -3491,11 +3492,11 @@
                     const gameInDb = getGameByDateAndTime(date, getValue('match_time'));
                     if(gameInDb && gameInDb.arena) arena = gameInDb.arena;
                     
-                    output = `🏀 ${toMathBoldSerif(title)}\n\n`;
+                    output = `🌃 ${toMathBoldSerif(dayName + ' NIGHT FOR REAL')}｜${title}\n\n`;
                     output += `${getValue('promo_text')}\n\n-\n\n`;
-                    output += `📌 小週末就看籃球：\n`;
-                    output += `▌${mmdd}（${dayChi}）｜${getValue('match_time')}｜${away.full}（客） vs. ${home.full}（主）｜${arena}\n\n-\n\n`;
-                    if(getValue('promo_link')) output += `${getValue('promo_link')}\n\n`;
+                    output += `📌 ${getValue('promo_cta')}：\n`;
+                    output += `▌${mmdd}（${dayChi}）｜${getValue('match_time')}｜${away.full}（客） vs. ${home.full}（主）｜${arena}\n\n`;
+                    if(getValue('promo_link')) output += `-\n\n${getValue('promo_link')}\n\n`;
                     output += `${COMMON_TAGS}`;
 
                 } else if (['matchup_highlight','wild_ending'].includes(currentMode)) {
