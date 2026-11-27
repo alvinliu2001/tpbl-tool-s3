@@ -2596,6 +2596,7 @@
                 loadFromLocal();
                 if (mode === 'monthly_mvp_vote') syncMonthlyPeriod('mvp',true);
                 if (mode === 'monthly_mvp_award') syncMonthlyPeriod('award',true);
+                if (mode === 'monthly_kicks') syncMonthlyPeriod('kicks');
                 
                 // Finally generate copy (with safety)
                 generateCopy();
@@ -2917,8 +2918,13 @@
                     `;
                 } else if (mode === 'monthly_kicks') {
                     html += `
-                        ${createSelect('kicks_month', '月份', MONTHS)}
-                        ${createTextarea('kicks_intro', '引言文案', '', 4)}
+                        ${createMonthlyPeriod('kicks')}
+                        ${createTextarea('kicks_intro', '引言文案', '', 4, '從迅捷俐落的外線殺招，到穩固可靠的禁區基石，每一雙都是左右戰局的制勝裝備。')}
+                        ${createTextarea('kicks_prize', '本月獎品', '', 3, 'Nike Elite 2.0 緩震中筒襪（HM0285-100，市價 NT$450）')}
+                        ${createInput('kicks_activity_time', '活動時間', 'text', '', '即日起至 12/6 23:59')}
+                        ${createTextarea('kicks_steps', '參加方式', '', 4, '1. 追蹤 @tpbl.tw 與摩曼頓 @momentum.tw。\n2. 在本篇貼文留言告訴我們，你最喜歡哪位球員的實戰球鞋，並標註一位朋友。')}
+                        ${createTextarea('kicks_draw_notice', '得獎通知', '', 4, '中獎名單將於 12/7 於 TPBL 官方 Instagram 限時動態，得獎者請於 12/8 23:59 前依通知回覆，如須填寫領據，請依官方通知完成即可領獎。')}
+                        ${createTextarea('kicks_cautions', '活動注意事項', '', 4, '・領獎通知以 TPBL 官方帳號為準，勿依陌生訊息匯款。\n・若獎品或所需尺寸缺貨，主辦單位得更換為同等價值商品。')}
                     `;
                 } else if (mode === 'monthly_mvp_vote') {
                     html +=
@@ -2997,6 +3003,11 @@
                 }
 
                 container.innerHTML = html;
+                if (mode === 'monthly_kicks') {
+                    document.getElementById('kicks_period_count').value = '2';
+                    document.getElementById('kicks_period_first').value = '10';
+                    document.getElementById('kicks_period_second').value = '11';
+                }
                 if (mode === 'career_milestone') addStatItem();
                 if (YOUTUBE_MODES.includes(mode)) {
                     const number = document.getElementById('youtube_game_num'), select = document.getElementById('youtube_game_select');
@@ -3015,8 +3026,8 @@
                 if (mode === 'monthly_mvp_vote') {
                     addMvpNominee('local'); addMvpNominee('foreign');
                 }
-                if (mode === 'monthly_mvp_vote' || mode === 'monthly_mvp_award') {
-                    const prefix = mode === 'monthly_mvp_vote' ? 'mvp' : 'award';
+                if (['monthly_mvp_vote','monthly_mvp_award','monthly_kicks'].includes(mode)) {
+                    const prefix = mode === 'monthly_mvp_vote' ? 'mvp' : mode === 'monthly_kicks' ? 'kicks' : 'award';
                     ['count','first','second'].forEach(key => {
                         document.getElementById(prefix + '_period_' + key).onchange = () => syncMonthlyPeriod(prefix);
                     });
@@ -3065,9 +3076,27 @@
             if (team) category.value = '';
         }
 
+        const MVP_PERIODS = [
+            {months:['10','11'],games:20},
+            {months:['12'],games:21},
+            {months:['1'],games:21},
+            {months:['2','3'],games:31},
+            {months:['4','5'],games:33}
+        ];
+        function applyMvpPeriod(prefix, value) {
+            const period = MVP_PERIODS.find(item => item.months.join('-') === value);
+            if (!period) return;
+            document.getElementById(prefix + '_period_count').value = String(period.months.length);
+            document.getElementById(prefix + '_period_first').value = period.months[0];
+            document.getElementById(prefix + '_period_second').value = period.months[1] || '';
+            syncMonthlyPeriod(prefix);
+            saveToLocal(); generateCopy();
+        }
         function createMonthlyPeriod(prefix) {
             const options = '<option value="">選擇月份</option>' + Array.from({length:12},(_,i) => '<option value="' + (i+1) + '">' + (i+1) + ' 月</option>').join('');
+            const preset = ['mvp','award','kicks'].includes(prefix) ? '<div><label for="' + prefix + '_period_preset" class="block text-sm mb-1">' + (prefix === 'kicks' ? '每月球鞋期別' : '月 MVP 評選期別') + '</label><select id="' + prefix + '_period_preset" oninput="applyMvpPeriod(\'' + prefix + '\',this.value)" class="w-full p-2.5 border rounded-md bg-white"><option value="">手動設定月份</option>' + MVP_PERIODS.map(item => '<option value="' + item.months.join('-') + '">' + item.months.join('-') + ' 月（' + item.games + ' 場）</option>').join('') + '</select></div>' : '';
             return '<div class="bg-gray-50 border rounded-lg p-4 space-y-3">' +
+                preset +
                 '<div><label for="' + prefix + '_period_count" class="block text-sm mb-1">月份數量</label><select id="' + prefix + '_period_count" class="w-full p-2.5 border rounded-md bg-white"><option value="1">單月</option><option value="2">雙月</option></select></div>' +
                 '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
                 '<div><label for="' + prefix + '_period_first" class="block text-sm mb-1">月份</label><select id="' + prefix + '_period_first" class="w-full p-2.5 border rounded-md bg-white">' + options + '</select></div>' +
@@ -3095,6 +3124,8 @@
             const months = [first.value, ...(dual ? [second.value] : [])].filter(Boolean);
             document.getElementById(prefix + '_month').value = months.join('-');
             document.getElementById(prefix + '_month_en').value = months.map(month => MONTHS[Number(month)-1]).join(' - ');
+            const preset = document.getElementById(prefix + '_period_preset');
+            if (preset) preset.value = MVP_PERIODS.some(item => item.months.join('-') === months.join('-')) ? months.join('-') : '';
         }
 
         function addMvpNominee(group) {
@@ -3844,16 +3875,18 @@
                     output += `${COMMON_TAGS}`;
 
                 } else if (currentMode === 'monthly_kicks') {
-                    const mVal = getValue('kicks_month');
-                    const mIndex = MONTHS.indexOf(mVal);
-                    const mNum = mIndex + 1; // 0-based index to 1-12
-                    
-                    output = `👟${toMathBoldSerif('KICKS OF THE MONTH')}｜${toMathBoldSerif(mVal)}\n\n`;
-                    output += `${getValue('kicks_intro')}\n\n`;
-                    // Updated Format: "1 月..."
-                    output += `${mNum} 月精選實戰球鞋一次看 👀👟\n\n`;
-                    output += `Presented by @momentum.tw\n\n`;
-                    output += `${COMMON_TAGS} #momentum`;
+                    syncMonthlyPeriod('kicks');
+                    const month = getValue('kicks_month').replace('-', ' - ');
+                    output = `👟 ${toMathBoldSerif('FOR REAL KICKS')}｜本月精選實戰球鞋（${toMathBoldSerif(getValue('kicks_month_en'))}）\n\n`;
+                    output += `🔍 文末完成指定步驟就有機會獲得限量好禮 💬\n\n`;
+                    output += `${getValue('kicks_intro')}\n\n${month} 月精選實戰球鞋一次看 👀\n\n`;
+                    output += `Presented by @momentum.tw\n\n－\n\n`;
+                    output += `🎁 ${toMathBoldSerif('BONUS DRAW')} 球迷回饋\n\n`;
+                    output += `📌 本月獎品\n${getValue('kicks_prize')}\n\n`;
+                    output += `📌 活動時間\n${getValue('kicks_activity_time')}\n\n`;
+                    output += `📌 參加方式\n${getValue('kicks_steps')}\n\n`;
+                    output += `${getValue('kicks_draw_notice')}\n\n⚠️ 活動注意事項：\n\n${getValue('kicks_cautions')}\n\n`;
+                    output += '#TPBL #蝦皮購物 #TPBL例行賽 #FORREAL來真的 #momentum';
 
                 } else if (currentMode === 'monthly_mvp_award') {
                     const month = getValue('award_month'), english = getValue('award_month_en');
